@@ -30,19 +30,19 @@
                 android:id="@+id/download1RadioBtn"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Glide - Image Loading Library by BumpTech" />
+                android:text="@string/option1" />
 
             <RadioButton
                 android:id="@+id/download2RadioBtn"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="LoadApp - Current repository by Udacity" />
+                android:text="@string/option2" />
 
             <RadioButton
                 android:id="@+id/download3RadioBtn"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Retrofit - Type-safe HTTP client for Android and Java by Square, Inc" />
+                android:text="@string/option3" />
         </RadioGroup>
 
         <com.example.downloadfile.ButtonView
@@ -50,7 +50,7 @@
             android:layout_width="0dp"
             android:layout_height="60dp"
             android:layout_margin="20dp"
-            android:text = "Download"
+            android:text = "@string/download"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintBottom_toBottomOf="parent"

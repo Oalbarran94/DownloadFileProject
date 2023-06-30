@@ -6,7 +6,6 @@ import android.graphics.Canvas
 import android.graphics.Paint
 import android.graphics.Typeface
 import android.util.AttributeSet
-import android.util.Log
 import android.view.View
 import androidx.core.content.withStyledAttributes
 import kotlin.properties.Delegates
@@ -35,11 +34,9 @@ class ButtonView @JvmOverloads constructor(
     private var buttonState: ButtonState by Delegates.observable(ButtonState.Completed) { p, old, new ->
         when (new) {
             ButtonState.Clicked -> {
-                Log.i("ButtonView", "ButtonState.Clicked")
                 configureDownloadAnimation()
             }
             ButtonState.Loading -> {
-                Log.i("ButtonView", "ButtonState.Loading")
                 isClickable = false
                 valueAnimator.start()
                 buttonText = getContext().getString(R.string.buttonLoading)
@@ -58,20 +55,16 @@ class ButtonView @JvmOverloads constructor(
     private val valueAnimator = ValueAnimator()
 
     private fun configureDownloadAnimation() {
-        Log.i("ButtonView", "setting up valueAnimator")
         valueAnimator.setIntValues(0, widthSize)
         valueAnimator.duration = 2000L
         valueAnimator.repeatCount = ValueAnimator.INFINITE
         valueAnimator.addUpdateListener { animator ->
-            Log.i("ButtonView", "valueAnimator update")
             fillWidth = animator.animatedValue as Int;
             sweepAngle =  ((fillWidth.toFloat() / widthSize.toFloat()) * 360).toInt()
 
             if (fillWidth >= widthSize && buttonState ==ButtonState.Completed) {
-                Log.i("ButtonView", "fillWidth at maximum, resetting animation")
                 stopDownloadAnimation()
             }
-
             invalidate()
         }
         buttonState = ButtonState.Loading
@@ -86,7 +79,6 @@ class ButtonView @JvmOverloads constructor(
     }
 
     private fun stopDownloadAnimation() {
-        Log.i("ButtonView", "stopping valueAnimator")
         isClickable = true
         buttonText = context.getString(R.string.buttonName)
         valueAnimator.cancel()
