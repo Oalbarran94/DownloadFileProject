@@ -1,3 +1,7 @@
 <resources>
     <string name="app_name">Download File</string>
+    <string name="buttonLoading">Loading… </string>
+    <string name="buttonName">Download</string>
+    <string name="makeSelection">Please select the file to download</string>
+    <string name="description">Download files</string>
 </resources>
