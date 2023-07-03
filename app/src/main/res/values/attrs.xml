@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <declare-styleable name="LoadingButton">
-        <attr name="text" format="string" />
+    <declare-styleable name="ButtonView">
+        <attr name="android:text" format="string" />
         <attr name="fillColor" format="reference" />
     </declare-styleable>
 </resources>

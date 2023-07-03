@@ -5,44 +5,66 @@
     <data>
         <variable name="content" type="int"/>
     </data>
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/main_layout"
+    <androidx.constraintlayout.motion.widget.MotionLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        app:layout_behavior="@string/appbar_scrolling_view_behavior"
         tools:context=".MainActivity"
-        tools:showIn="@layout/activity_main">
+        tools:showIn="@layout/activity_main"
+        app:layoutDescription="@xml/main_detail_scene">
 
-        <RadioGroup
-            android:id="@+id/downloadRadioGroup"
-            android:layout_width="0dp"
+        <FrameLayout
+            android:id="@+id/frameID"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
-            android:layout_marginTop="8dp"
-            android:layout_marginEnd="16dp"
-            android:layout_marginBottom="8dp"
-            app:layout_constraintBottom_toTopOf="@+id/custom_button"
+            android:layout_marginTop="32dp"
+            android:background="@color/white"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent">
 
-            <RadioButton
-                android:id="@+id/download1RadioBtn"
-                android:layout_width="match_parent"
+            <ImageView
+                android:id="@+id/imageId"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                app:srcCompat="@drawable/download_arrow" />
+
+        </FrameLayout>
+
+        <RadioGroup
+            android:id="@+id/radioGroup"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="32dp"
+            android:layout_marginEnd="16dp"
+            android:orientation="vertical"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/frameID">
+
+            <RadioButton
+                android:id="@+id/firstOption"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:onClick="onRadioButtonClicked"
                 android:text="@string/option1" />
 
             <RadioButton
-                android:id="@+id/download2RadioBtn"
-                android:layout_width="match_parent"
+                android:id="@+id/secondOption"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:onClick="onRadioButtonClicked"
                 android:text="@string/option2" />
 
             <RadioButton
-                android:id="@+id/download3RadioBtn"
-                android:layout_width="match_parent"
+                android:id="@+id/thirdOption"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:onClick="onRadioButtonClicked"
                 android:text="@string/option3" />
+
         </RadioGroup>
 
         <com.example.downloadfile.ButtonView
@@ -50,11 +72,7 @@
             android:layout_width="0dp"
             android:layout_height="60dp"
             android:layout_margin="20dp"
-            android:text = "@string/download"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            android:text = "@string/download" />
 
-    </androidx.constraintlayout.widget.ConstraintLayout>
+    </androidx.constraintlayout.motion.widget.MotionLayout>
 </layout>

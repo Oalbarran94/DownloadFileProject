@@ -1,15 +1,26 @@
 package com.example.downloadfile
 
+import android.Manifest
 import android.app.DownloadManager
+import android.app.NotificationChannel
 import android.app.NotificationManager
+import android.app.PendingIntent
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.content.pm.PackageManager
 import android.net.Uri
+import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
+import android.view.View
+import android.widget.RadioButton
 import android.widget.Toast
+import androidx.core.app.ActivityCompat
+import androidx.core.app.NotificationCompat
+import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
 import com.example.downloadfile.databinding.ActivityMainBinding
 
@@ -20,96 +31,115 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
 
-    companion object {
-        private const val OPTION1 =
-            "https://github.com/bumptech/glide"
-        private const val OPTION2 =
-            "https://github.com/udacity/nd940-c3-advanced-android-programming-project-starter"
-        private const val OPTION3 =
-            "https://github.com/square/retrofit"
-    }
+    private lateinit var pendingIntent: PendingIntent
+    private var selectedLink: String? = null
+    private var selectedName: String? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
-        binding = ActivityMainBinding.inflate(layoutInflater)
-
         super.onCreate(savedInstanceState)
-        setContentView(binding.root)
+        binding = ActivityMainBinding.inflate(layoutInflater)
         setSupportActionBar(binding.toolbar)
+        setContentView(binding.root)
 
-        notificationManager = ContextCompat.getSystemService(
-            applicationContext,
-            NotificationManager::class.java
-        ) as NotificationManager
-
-        notificationManager.createChannel(
-            "downloadChannelId",
-            getString(R.string.channelName)
-        )
-
-        registerReceiver(receiver, IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE))
-
-
+        // Download Button
+        binding.includedLayout.customButton.setLoadingButtonState(ButtonState.Completed)
         binding.includedLayout.customButton.setOnClickListener {
-
-            when (binding.includedLayout.downloadRadioGroup.checkedRadioButtonId) {
-                R.id.download1RadioBtn -> {
-                    download(OPTION1)
-                }
-                R.id.download2RadioBtn -> {
-                    download(OPTION2)
-                }
-                R.id.download3RadioBtn -> {
-                    download(OPTION3)
-                }
-                else -> {
-                    Toast.makeText(
-                        applicationContext,
-                        R.string.makeSelection,
-                        Toast.LENGTH_SHORT
-                    ).show()
-                }
-            }
+            binding.includedLayout.customButton.setLoadingButtonState(ButtonState.Loading)
+            download()
         }
     }
 
-    private fun download(url: String) {
-        notificationManager.cancelNotifications()
-        val request =
-            DownloadManager.Request(Uri.parse(url))
-                .setTitle(getString(R.string.app_name))
-                .setDescription(getString(R.string.description))
-                .setRequiresCharging(false)
-                .setAllowedOverMetered(true)
-                .setAllowedOverRoaming(true)
+    private fun download() {
+        if (selectedLink != null) {
 
-        val downloadManager = getSystemService(DOWNLOAD_SERVICE) as DownloadManager
-        downloadID = downloadManager.enqueue(request)
-        binding.includedLayout.customButton.downloadStarted()
+            val request =
+                DownloadManager.Request(Uri.parse(selectedLink))
+                    .setTitle(getString(R.string.app_name))
+                    .setDescription(getString(R.string.description))
+                    .setRequiresCharging(false)
+                    .setAllowedOverMetered(true)
+                    .setAllowedOverRoaming(true)
+
+            val downloadManager = getSystemService(DOWNLOAD_SERVICE) as DownloadManager
+            downloadID =
+                downloadManager.enqueue(request)
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                val channel = NotificationChannel(
+                    "channelId",
+                    getString(R.string.notificationChannelName),
+                    NotificationManager.IMPORTANCE_DEFAULT
+                )
+                channel.description = "Channel Description"
+
+                val notificationManager = getSystemService(
+                    NotificationManager::class.java
+                )
+                notificationManager.createNotificationChannel(channel)
+            }
+
+            pendingIntent = PendingIntent.getActivity(
+                this,
+                0,
+                Intent(this, DetailActivity::class.java),
+                PendingIntent.FLAG_UPDATE_CURRENT
+            )
+
+            //builder
+            val builder: NotificationCompat.Builder =
+                NotificationCompat.Builder(this, "channelId")
+                    .setSmallIcon(androidx.core.R.drawable.notification_template_icon_bg)
+                    .setContentTitle(getString(R.string.notificationTitle))
+                    .setContentText(getString(R.string.notificationDescription))
+                    .setContentIntent(pendingIntent)
+                    .addAction(
+                        0,
+                        "Check the status",
+                        pendingIntent
+                    )
+                    .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                    .setAutoCancel(true)
+
+            val notificationManager = NotificationManagerCompat.from(this)
+
+            if (ActivityCompat.checkSelfPermission(
+                    this,
+                    Manifest.permission.POST_NOTIFICATIONS
+                ) != PackageManager.PERMISSION_GRANTED
+            ) {
+                return
+            }
+
+            notificationManager.notify(0, builder.build())
+
+        } else Toast.makeText(this, "Please select the file to download", Toast.LENGTH_SHORT)
+            .show()
     }
 
-    private val receiver = object : BroadcastReceiver() {
-        override fun onReceive(context: Context?, intent: Intent?) {
-            val id = intent?.getLongExtra(DownloadManager.EXTRA_DOWNLOAD_ID, -1)
-            if (id == downloadID) {
-                var message = "Download Completed"
-                val downloadManager = getSystemService(DOWNLOAD_SERVICE) as DownloadManager
-                val cursor = downloadManager.query(DownloadManager.Query().setFilterById(id))
-                if (cursor.moveToFirst()) {
-                    val idx = cursor.getColumnIndex(DownloadManager.COLUMN_URI)
-                    val uri = cursor.getString(idx)
-                    message = getString(R.string.notificationDescription, uri)
+    fun onRadioButtonClicked(view: View) {
+        if (view is RadioButton) {
+            val isChecked = view.isChecked
+            when (view.getId()) {
+                R.id.firstOption ->
+                    if (isChecked) {
+                        selectedLink = "https://github.com/bumptech/glide"
+                        selectedName = getString(R.string.option1)
+                    }
+
+                R.id.secondOption ->
+                    if (isChecked) {
+                        selectedLink =
+                            "https://github.com/udacity/nd940-c3-advanced-android-programming-project-starter"
+                        selectedName = getString(R.string.option2)
+                    }
+
+                R.id.thirdOption -> {
+                    if (isChecked) {
+                        selectedLink = "https://github.com/square/retrofit"
+                        selectedName = getString(R.string.option3)
+                    }
                 }
-                Toast.makeText(applicationContext, R.string.downloadCompleted, Toast.LENGTH_SHORT)
-                    .show()
-
-                binding.includedLayout.customButton.downloadFinished()
-                notificationManager.sendNotification(message, id, "downloadChannelId", applicationContext)
-
             }
         }
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        unregisterReceiver(receiver)
     }
 }

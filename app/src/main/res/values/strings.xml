@@ -11,8 +11,15 @@
     <string name="notificationTitle">App Notification </string>
     <string name="notificationButton">Status</string>
     <string name="channelName">download</string>
-    <string name="notificationDescription">Download of %1$s is completed!</string>
+    <string name="notificationDescription">Download is completed!</string>
     <string name="downloadCompleted">Download completed</string>
     <string name="buttonBack">back</string>
     <string name="downloadFilename">filename</string>
+
+    <string name="notificationChannelName" translatable="true">channelName</string>
+    <string name="fileName">File name:</string>
+    <string name="success">Success</string>
+    <string name="status">Status:</string>
+    <string name="name">NAME</string>
+    <string name="ok">OK</string>
 </resources>

@@ -1,13 +1,15 @@
 package com.example.downloadfile
 
+import android.animation.Animator
 import android.animation.ValueAnimator
 import android.content.Context
 import android.graphics.Canvas
+import android.graphics.Color
 import android.graphics.Paint
-import android.graphics.Typeface
+import android.graphics.Rect
 import android.util.AttributeSet
 import android.view.View
-import androidx.core.content.withStyledAttributes
+import androidx.core.content.ContextCompat
 import kotlin.properties.Delegates
 
 class ButtonView @JvmOverloads constructor(
@@ -18,113 +20,164 @@ class ButtonView @JvmOverloads constructor(
 
     private var widthSize = 0
     private var heightSize = 0
-    private var fillWidth = 0
-    private var sweepAngle = 0
-    private var buttonText = "Hello"
-    private var fillColor = R.color.colorPrimaryDark
+    private var buttonText: String
+    private var buttonBackgroundColor = Color.parseColor("#07C2AA")
+    private var progress: Float = 0f
+    private var valueAnimator = ValueAnimator()
+    private val textRect = Rect()
 
-    private val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        style = Paint.Style.FILL
-        textAlign = Paint.Align.CENTER
-        textSize = 55.0f
-        typeface = Typeface.create("", Typeface.BOLD)
-        color = context.getColor(R.color.colorPrimary)
-    }
-
-    private var buttonState: ButtonState by Delegates.observable(ButtonState.Completed) { p, old, new ->
-        when (new) {
-            ButtonState.Clicked -> {
-                configureDownloadAnimation()
-            }
+    private var buttonState: ButtonState by Delegates.observable(
+        ButtonState.Completed
+    ) { _, _, newValue ->
+        when (newValue) {
             ButtonState.Loading -> {
-                isClickable = false
+                setText("Loading")
+                setBgColor("#017E6E")
+                valueAnimator = ValueAnimator.ofFloat(0f, 1f).apply {
+                    addUpdateListener {
+                        progress = animatedValue as Float
+                        invalidate()
+                    }
+                    duration = 3000
+                }
+                val animatorListener = object : Animator.AnimatorListener {
+                    override fun onAnimationStart(animation: Animator) {
+                    }
+
+                    override fun onAnimationEnd(animation: Animator) {
+                        setText("Download")
+                        setBgColor("#07C2AA")
+                        progress = 0f
+                    }
+
+                    override fun onAnimationCancel(animation: Animator) {
+                    }
+
+                    override fun onAnimationRepeat(animation: Animator) {
+                    }
+                }
+                valueAnimator.addListener(animatorListener)
                 valueAnimator.start()
-                buttonText = getContext().getString(R.string.buttonLoading)
             }
+            else -> {}
         }
     }
+
 
     init {
-        context.withStyledAttributes(attrs, R.styleable.LoadingButton) {
-            buttonText = getString(R.styleable.LoadingButton_text).toString()
-            fillColor = getResourceId(R.styleable.LoadingButton_fillColor, R.color.colorPrimaryDark)
-        }
-        buttonState = ButtonState.Completed
-    }
-
-    private val valueAnimator = ValueAnimator()
-
-    private fun configureDownloadAnimation() {
-        valueAnimator.setIntValues(0, widthSize)
-        valueAnimator.duration = 2000L
-        valueAnimator.repeatCount = ValueAnimator.INFINITE
-        valueAnimator.addUpdateListener { animator ->
-            fillWidth = animator.animatedValue as Int;
-            sweepAngle =  ((fillWidth.toFloat() / widthSize.toFloat()) * 360).toInt()
-
-            if (fillWidth >= widthSize && buttonState ==ButtonState.Completed) {
-                stopDownloadAnimation()
+        context.theme.obtainStyledAttributes(
+            attrs,
+            R.styleable.ButtonView,
+            0, 0
+        ).apply {
+            try {
+                buttonText = getString(R.styleable.ButtonView_android_text).toString()
+                buttonBackgroundColor = ContextCompat.getColor(context, R.color.colorPrimary)
+            } finally {
+                recycle()
             }
-            invalidate()
         }
-        buttonState = ButtonState.Loading
     }
 
-    fun downloadFinished(){
-        buttonState = ButtonState.Completed
+    private val textPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        style = Paint.Style.FILL
+        textAlign = Paint.Align.CENTER
+        textSize = 50.0f
+        color = Color.WHITE
     }
 
-    fun downloadStarted(){
-        buttonState = ButtonState.Clicked
+    private val backgroundPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        color = Color.parseColor("#07C2AA")
     }
 
-    private fun stopDownloadAnimation() {
-        isClickable = true
-        buttonText = context.getString(R.string.buttonName)
-        valueAnimator.cancel()
-        valueAnimator.removeAllUpdateListeners()
-        fillWidth = 0
-        sweepAngle = 0
-        invalidate()
+    private val inProgressBackgroundPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        color = Color.parseColor("#017E6E")
     }
 
-    override fun performClick(): Boolean {
-        super.performClick()
-        return true
+    private val inProgressArcPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        color = Color.YELLOW
     }
 
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
-        paint.color = context.getColor(R.color.colorPrimary)
-        canvas.drawRect(0f, 0f, widthSize.toFloat(), heightSize.toFloat(), paint)
 
-        paint.color = resources.getColor(fillColor)
-        canvas.drawRect(0f, 0f, fillWidth.toFloat(), heightSize.toFloat(), paint)
+        val cornerRadius = 20.0f
+        val backgroundWidth = measuredWidth.toFloat()
+        val backgroundHeight = measuredHeight.toFloat()
 
-        paint.color = resources.getColor(R.color.colorAccent)
-        val smallerSide = (if(widthSize > heightSize) heightSize else widthSize).toFloat()
-        val padding = smallerSide * 0.1f
-        val left = widthSize - smallerSide + padding
-        val top = 0f + padding
-        val right = widthSize.toFloat() - padding
-        val bottom = smallerSide - padding
-        canvas.drawArc(left, top, right, bottom, 0f, sweepAngle.toFloat(), true, paint)
+        canvas.drawColor(buttonBackgroundColor)
+        textPaint.getTextBounds(buttonText, 0, buttonText.length, textRect)
+        canvas.drawRoundRect(
+            0f,
+            0f,
+            backgroundWidth,
+            backgroundHeight,
+            cornerRadius,
+            cornerRadius,
+            backgroundPaint
+        )
 
-        paint.color = resources.getColor(R.color.white)
-        canvas.drawText(buttonText, width / 2f, height / 2f, paint)
+        if (buttonState == ButtonState.Loading) {
+            var progressVal = progress * measuredWidth.toFloat()
+            canvas.drawRoundRect(
+                0f,
+                0f,
+                progressVal,
+                backgroundHeight,
+                cornerRadius,
+                cornerRadius,
+                inProgressBackgroundPaint
+            )
+
+            val arcDiameter = cornerRadius * 2
+            val arcRectSize = measuredHeight.toFloat() - paddingBottom.toFloat() - arcDiameter
+
+            progressVal = progress * 360f
+            canvas.drawArc(
+                paddingStart.toFloat() + arcDiameter + 630f,
+                paddingTop.toFloat() + arcDiameter,
+                arcRectSize + 630f,
+                arcRectSize,
+                0f,
+                progressVal,
+                true,
+                inProgressArcPaint
+            )
+
+        }
+
+        val centerX = measuredWidth.toFloat() / 2
+        val centerY = measuredHeight.toFloat() / 2 - textRect.centerY()
+        canvas.drawText(buttonText, centerX, centerY, textPaint)
     }
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
-        val minw: Int = paddingLeft + paddingRight + suggestedMinimumWidth
-        val w: Int = resolveSizeAndState(minw, widthMeasureSpec, 1)
-        val h: Int = resolveSizeAndState(
-            MeasureSpec.getSize(w),
+        val minWidth: Int = paddingLeft + paddingRight + suggestedMinimumWidth
+        val width: Int = resolveSizeAndState(minWidth, widthMeasureSpec, 1)
+        val height: Int = resolveSizeAndState(
+            MeasureSpec.getSize(width),
             heightMeasureSpec,
             0
         )
-        widthSize = w
-        heightSize = h
-        setMeasuredDimension(w, h)
+        widthSize = width
+        heightSize = height
+        setMeasuredDimension(width, height)
+    }
+
+    fun setLoadingButtonState(state: ButtonState) {
+        buttonState = state
+    }
+
+    private fun setText(buttonText: String) {
+        this.buttonText = buttonText
+        invalidate()
+        requestLayout()
+    }
+
+    private fun setBgColor(backgroundColor: String) {
+        buttonBackgroundColor = Color.parseColor(backgroundColor)
+        invalidate()
+        requestLayout()
     }
 
 }

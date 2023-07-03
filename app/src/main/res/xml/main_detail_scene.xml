@@ -4,27 +4,31 @@
 
     <ConstraintSet android:id="@+id/start">
         <Constraint
-            android:id="@id/backButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintStart_toStartOf="parent"/>
+            android:id="@+id/custom_button"
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            app:layout_constraintBottom_toBottomOf="parent" />
+
     </ConstraintSet>
 
     <ConstraintSet android:id="@+id/end">
         <Constraint
-            android:id="@id/backButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:id="@id/custom_button"
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
+            android:layout_marginBottom="32dp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent" />
+
     </ConstraintSet>
 
     <Transition
+        app:autoTransition="animateToEnd"
         app:constraintSetEnd="@id/end"
         app:constraintSetStart="@+id/start"
-        app:duration="2000"
-        app:autoTransition="animateToEnd">
-    </Transition>
+        app:duration="2000" />
+
 </MotionScene>
