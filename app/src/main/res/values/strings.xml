@@ -1,8 +1,5 @@
 <resources>
     <string name="app_name">Download File</string>
-    <string name="buttonLoading">Loading… </string>
-    <string name="buttonName">Download</string>
-    <string name="makeSelection">Please select the file to download</string>
     <string name="description">Download files</string>
     <string name="option1">Glide - Image Loading Library by BumpTech</string>
     <string name="option2">LoadApp - Current repository by Udacity</string>

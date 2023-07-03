@@ -5,28 +5,22 @@ import android.app.DownloadManager
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
-import android.content.BroadcastReceiver
-import android.content.Context
 import android.content.Intent
-import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.util.Log
 import android.view.View
 import android.widget.RadioButton
 import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
-import androidx.core.content.ContextCompat
 import com.example.downloadfile.databinding.ActivityMainBinding
 
 class MainActivity : AppCompatActivity() {
 
-    private lateinit var notificationManager: NotificationManager
     private var downloadID: Long = 0
 
     private lateinit var binding: ActivityMainBinding
@@ -41,7 +35,6 @@ class MainActivity : AppCompatActivity() {
         setSupportActionBar(binding.toolbar)
         setContentView(binding.root)
 
-        // Download Button
         binding.includedLayout.customButton.setLoadingButtonState(ButtonState.Completed)
         binding.includedLayout.customButton.setOnClickListener {
             binding.includedLayout.customButton.setLoadingButtonState(ButtonState.Loading)
@@ -85,7 +78,6 @@ class MainActivity : AppCompatActivity() {
                 PendingIntent.FLAG_UPDATE_CURRENT
             )
 
-            //builder
             val builder: NotificationCompat.Builder =
                 NotificationCompat.Builder(this, "channelId")
                     .setSmallIcon(androidx.core.R.drawable.notification_template_icon_bg)

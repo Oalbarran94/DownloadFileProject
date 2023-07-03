@@ -24,7 +24,6 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
-
         <TextView
             android:id="@+id/selectedFileOption"
             android:layout_width="250dp"
@@ -42,7 +41,6 @@
             android:text="@string/status"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/selectedFileOption" />
-
 
         <TextView
             android:id="@+id/status"

@@ -17,10 +17,8 @@ class DetailActivity : AppCompatActivity(){
         setSupportActionBar(binding.toolbar)
         setContentView(binding.root)
 
-
         binding.detailLayout.OK.setOnClickListener{
             startActivity(Intent(applicationContext, MainActivity::class.java))
         }
-
     }
 }
