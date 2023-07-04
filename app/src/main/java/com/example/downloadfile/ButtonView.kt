@@ -8,6 +8,7 @@ import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.Rect
 import android.util.AttributeSet
+import android.util.Log
 import android.view.View
 import androidx.core.content.ContextCompat
 import kotlin.properties.Delegates
@@ -29,6 +30,7 @@ class ButtonView @JvmOverloads constructor(
     private var buttonState: ButtonState by Delegates.observable(
         ButtonState.Completed
     ) { _, _, newValue ->
+        Log.i("On change status", newValue.toString())
         when (newValue) {
             ButtonState.Loading -> {
                 setText("Loading")
@@ -39,6 +41,7 @@ class ButtonView @JvmOverloads constructor(
                         invalidate()
                     }
                     duration = 3000
+                    repeatCount = ValueAnimator.INFINITE
                 }
                 val animatorListener = object : Animator.AnimatorListener {
                     override fun onAnimationStart(animation: Animator) {

@@ -1,6 +1,7 @@
 package com.example.downloadfile
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.app.DownloadManager
 import android.app.NotificationChannel
 import android.app.NotificationManager
@@ -9,11 +10,13 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.os.Handler
+import android.util.Log
 import android.view.View
 import android.widget.RadioButton
 import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
@@ -28,6 +31,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var pendingIntent: PendingIntent
     private var selectedLink: String? = null
     private var selectedName: String? = null
+    private var downloadStatusCode: String = "Loading"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -38,13 +42,13 @@ class MainActivity : AppCompatActivity() {
         binding.includedLayout.customButton.setLoadingButtonState(ButtonState.Completed)
         binding.includedLayout.customButton.setOnClickListener {
             binding.includedLayout.customButton.setLoadingButtonState(ButtonState.Loading)
-            download()
+            Handler().postDelayed(this::download, 5000)
         }
     }
 
+    @SuppressLint("Range")
     private fun download() {
         if (selectedLink != null) {
-
             val request =
                 DownloadManager.Request(Uri.parse(selectedLink))
                     .setTitle(getString(R.string.app_name))
@@ -54,6 +58,12 @@ class MainActivity : AppCompatActivity() {
                     .setAllowedOverRoaming(true)
 
             val downloadManager = getSystemService(DOWNLOAD_SERVICE) as DownloadManager
+            val cursor = downloadManager.query(DownloadManager.Query())
+            var status = 0
+            if (cursor.moveToFirst()) {
+                status = cursor.getInt(cursor.getColumnIndex(DownloadManager.COLUMN_STATUS))
+            }
+            setDownloadStatus(status)
             downloadID =
                 downloadManager.enqueue(request)
 
@@ -61,7 +71,7 @@ class MainActivity : AppCompatActivity() {
                 val channel = NotificationChannel(
                     "channelId",
                     getString(R.string.notificationChannelName),
-                    NotificationManager.IMPORTANCE_DEFAULT
+                    NotificationManager.IMPORTANCE_LOW
                 )
                 channel.description = "Channel Description"
 
@@ -71,10 +81,14 @@ class MainActivity : AppCompatActivity() {
                 notificationManager.createNotificationChannel(channel)
             }
 
+            val intent = Intent(this, DetailActivity::class.java)
+            intent.putExtra("selectedName", selectedName);
+            intent.putExtra("downloadStatus", downloadStatusCode)
+
             pendingIntent = PendingIntent.getActivity(
                 this,
                 0,
-                Intent(this, DetailActivity::class.java),
+                intent,
                 PendingIntent.FLAG_UPDATE_CURRENT
             )
 
@@ -89,7 +103,7 @@ class MainActivity : AppCompatActivity() {
                         "Check the status",
                         pendingIntent
                     )
-                    .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                    .setPriority(NotificationCompat.PRIORITY_LOW)
                     .setAutoCancel(true)
 
             val notificationManager = NotificationManagerCompat.from(this)
@@ -103,6 +117,7 @@ class MainActivity : AppCompatActivity() {
             }
 
             notificationManager.notify(0, builder.build())
+            binding.includedLayout.customButton.setLoadingButtonState(ButtonState.Completed)
 
         } else Toast.makeText(this, "Please select the file to download", Toast.LENGTH_SHORT)
             .show()
@@ -131,6 +146,20 @@ class MainActivity : AppCompatActivity() {
                         selectedName = getString(R.string.option3)
                     }
                 }
+            }
+        }
+    }
+
+    private fun setDownloadStatus(statusCode: Int) {
+        when(statusCode){
+            DownloadManager.STATUS_FAILED -> {
+                downloadStatusCode = "Failed"
+            }
+            DownloadManager.STATUS_SUCCESSFUL -> {
+                downloadStatusCode = "Success"
+            }
+            else -> {
+                downloadStatusCode
             }
         }
     }
